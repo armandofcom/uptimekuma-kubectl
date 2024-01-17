@@ -20,8 +20,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: uptimekuma
+  namespace: uptimekuma
+  labels:
+    app: uptimekuma
 spec:
   replicas: 1
+  revisionHistoryLimit: 5
+  progressDeadlineSeconds: 600
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
   selector:
     matchLabels:
       app: uptimekuma
@@ -30,14 +40,20 @@ spec:
       labels:
         app: uptimekuma
     spec:
+      volumes:
+        - name: uptimekuma-pvc-storage
+          persistentVolumeClaim:
+            claimName: uptimekuma-pvc-storage
       containers:
-      - name: uptimekuma
-        image: louislam/uptime-kuma:latest
-        ports:
-        - containerPort: 3001
-        volumeMounts:
-            - name: uptimekuma-pvc-storage
-              mountPath: /app/data
+       - name: uptimekuma
+         image: louislam/uptime-kuma:latest
+         ports:
+          - containerPort: 3001
+         volumeMounts:
+             - name: uptimekuma-pvc-storage
+               mountPath: /app/data
+      imagePullSecrets:
+        - name: hub.irontec.com
 ---
 apiVersion: v1
 kind: Service
