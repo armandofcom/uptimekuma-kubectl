@@ -17,13 +17,11 @@ spec:
       storage: 10Gi
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: uptimekuma
-  namespace: uptimekuma
 spec:
   replicas: 1
-  serviceName: uptimekuma-service
   selector:
     matchLabels:
       app: uptimekuma
@@ -33,30 +31,13 @@ spec:
         app: uptimekuma
     spec:
       containers:
-        - name: uptimekuma
-          image: louislam/uptime-kuma:latest
-          env:
-            - name: UPTIME_KUMA_PORT
-              value: "3001"
-            - name: PORT
-              value: "3001"
-          ports:
-            - name: uptimekuma
-              containerPort: 3001
-              protocol: TCP
-          volumeMounts:
+      - name: uptimekuma
+        image: louislam/uptime-kuma:latest
+        ports:
+        - containerPort: 3001
+        volumeMounts:
             - name: uptimekuma-pvc-storage
               mountPath: /app/data
-
-  volumeClaimTemplates:
-    - metadata:
-        name: uptimekuma-pvc-storage
-      spec:
-        accessModes: ["ReadWriteMany"]
-        volumeMode: Filesystem
-        resources:
-          requests:
-            storage: 10Gi
 ---
 apiVersion: v1
 kind: Service
