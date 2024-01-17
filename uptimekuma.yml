@@ -3,6 +3,19 @@ kind: Namespace
 metadata:
   name: uptimekuma
 ---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: uptimekuma-pvc-storage
+  namespace: uptimekuma
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-client
+  resources:
+    requests:
+      storage: 10Gi
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -32,18 +45,18 @@ spec:
               containerPort: 3001
               protocol: TCP
           volumeMounts:
-            - name: uptimekuma-data
+            - name: uptimekuma-pvc-storage
               mountPath: /app/data
 
   volumeClaimTemplates:
     - metadata:
-        name: uptimekuma-data
+        name: uptimekuma-pvc-storage
       spec:
-        accessModes: ["ReadWriteOnce"]
+        accessModes: ["ReadWriteMany"]
         volumeMode: Filesystem
         resources:
           requests:
-            storage: 4Gi
+            storage: 10Gi
 ---
 apiVersion: v1
 kind: Service
